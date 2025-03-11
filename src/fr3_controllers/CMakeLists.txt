@@ -31,6 +31,7 @@ add_library(
         ${PROJECT_NAME}
         SHARED
         src/joint_impedance_controller.cpp
+        src/joint_position_controller.cpp
 )
 
 target_include_directories(
