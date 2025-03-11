@@ -1,0 +1,8 @@
+<library path="fr3_controllers">
+    <class name="fr3_controllers/JointImpedanceController"
+           type="fr3_controllers::JointImpedanceController" base_class_type="controller_interface::ControllerInterface">
+        <description>
+            Joint impedance controller.
+        </description>
+    </class>
+</library>

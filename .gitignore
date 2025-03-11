@@ -1,0 +1,10 @@
+# Ignore build artifacts
+build/
+install/
+log/
+src/.vscode
+.vscode
+
+# ROS2-specific ignores
+.colcon/
+
