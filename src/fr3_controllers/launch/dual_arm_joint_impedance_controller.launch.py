@@ -1,181 +1,239 @@
 import os
-
 import xacro
-import yaml
 from ament_index_python.packages import get_package_share_directory
-from launch import LaunchDescription
+from launch import LaunchContext, LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
-    ExecuteProcess,
-    IncludeLaunchDescription,
     OpaqueFunction,
-    RegisterEventHandler,
+    IncludeLaunchDescription,
+    Shutdown,
 )
-from launch.event_handlers import OnProcessExit
+from launch.conditions import IfCondition, UnlessCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
 
-def load_arm(robot_ip: str, ee_id_val: str, is_left: bool):
+def _robot_description_dependent_nodes_spawner(
+    context: LaunchContext,
+    namespace,
+    robot_ip,
+    arm_id,
+    use_fake_hardware,
+    fake_sensor_commands,
+    load_gripper,
+):
 
-    if robot_ip == "":
-        return []
+    # Resolve all substitutions at launch time
+    namespace_str = context.perform_substitution(namespace)
+    robot_ip_str = context.perform_substitution(robot_ip)
+    arm_id_str = context.perform_substitution(arm_id)
+    use_fake_hardware_str = context.perform_substitution(use_fake_hardware)
+    fake_sensor_commands_str = context.perform_substitution(fake_sensor_commands)
+    load_gripper_str = context.perform_substitution(load_gripper)
 
-    # path to packages
-    # bringup_pkg = os.path.join(get_package_share_directory("fr3_bringup"))
-    description_pkg = os.path.join(get_package_share_directory("franka_description"))
-    controllers_pkg = os.path.join(get_package_share_directory("fr3_controllers"))
-    xacro_file = os.path.join(description_pkg, "robots", "fr3", "fr3.urdf.xacro")
-
-    # setup variables
-    controllers_param_file = os.path.join(
-        controllers_pkg,
-        "config",
-        ("fr3_left" if is_left else "fr3_right") + "_controllers.yaml",
+    # Path to Franka's URDF xacro
+    franka_xacro_filepath = os.path.join(
+        get_package_share_directory("franka_description"),
+        "robots",
+        "fr3",
+        "fr3.urdf.xacro",
     )
-    arm_id = "fr3_left" if is_left else "fr3_right"
-    controller_manager_arg = f"/{arm_id}/controller_manager"
-    left_robot_ip = robot_ip if is_left else ""
-    right_robot_ip = "" if is_left else robot_ip
-    load_gripper_val = "true" if ee_id_val else "false"
-    gripper_executable = (
-        "fake_gripper_state_publisher.py"
-        if (robot_ip == "fake")
-        else "franka_gripper_node"
-    )
-    gripper_joint_names = [f"{arm_id}_finger_joint1", f"{arm_id}_finger_joint2"]
 
-    # robot urdf
-    robot_urdf = xacro.process_file(
-        xacro_file,
+    # Generate the robot description from xacro
+    robot_description = xacro.process_file(
+        franka_xacro_filepath,
         mappings={
-            "hand": load_gripper_val,
             "ros2_control": "true",
-            "gazebo": "false",
-            "ee_id": ee_id_val,
-            "left_robot_ip": left_robot_ip,
-            "right_robot_ip": right_robot_ip,
+            "arm_id": arm_id_str,
+            "robot_ip": robot_ip_str,
+            "hand": load_gripper_str,
+            "use_fake_hardware": use_fake_hardware_str,
+            "fake_sensor_commands": fake_sensor_commands_str,
         },
+    ).toprettyxml(indent="  ")
+
+    # Path to joint limits file
+    joint_limits_filepath = os.path.join(
+        get_package_share_directory("franka_description"),
+        "config",
+        "joint_limits.yaml",
     )
 
-    # setup robot_description params for this arm
-    robot_description_params = {
-        "robot_description": robot_urdf.toxml(),
-        "use_sim_time": False,
-    }
-
-    launch_list = []
-
-    # append controller manager
-    launch_list.append(
-        Node(
-            package="controller_manager",
-            executable="ros2_control_node",
-            namespace=f"/{arm_id}",
-            parameters=[robot_description_params, controllers_param_file],
-            output={"stdout": "screen", "stderr": "screen"},
-        )
+    # Path to the controller configuration
+    franka_controllers = PathJoinSubstitution(
+        [FindPackageShare("fr3_controllers"), "config", "controllers.yaml"]
     )
 
-    # append joint state broadcaster
-    joint_state_broadcaster = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["joint_state_broadcaster", "-c", controller_manager_arg],
-    )
-    launch_list.append(joint_state_broadcaster)
-
-    if load_gripper_val == "true":
-
-        # append gripper controller
-        launch_list.append(
-            RegisterEventHandler(
-                event_handler=OnProcessExit(
-                    target_action=joint_state_broadcaster,
-                    on_exit=Node(
-                        package="controller_manager",
-                        executable="spawner",
-                        arguments=["gripper_controller", "-c", controller_manager_arg],
-                    ),
-                )
-            )
-        )
-
-    # append robot state publisher node
-    launch_list.append(
+    # Return the list of Nodes to be spawned once the robot description is known
+    return [
         Node(
             package="robot_state_publisher",
             executable="robot_state_publisher",
-            namespace=arm_id,
-            parameters=[robot_description_params],
+            namespace=namespace_str,
+            name="robot_state_publisher",
             output="screen",
-        )
-    )
-
-    return launch_list
-
-
-def launch_setup(context, *args, **kwargs):
-
-    left_robot_ip = context.perform_substitution(LaunchConfiguration("left_robot_ip"))
-    right_robot_ip = context.perform_substitution(LaunchConfiguration("right_robot_ip"))
-    ee_id_val = context.perform_substitution(LaunchConfiguration("ee_id"))
-    rviz_val = context.perform_substitution(LaunchConfiguration("rviz")) == "true"
-
-    launch_list = load_arm(left_robot_ip, ee_id_val, True) + load_arm(
-        right_robot_ip, ee_id_val, False
-    )
-
-    rviz_file = os.path.join(
-        get_package_share_directory("franka_description"), "rviz", "bringup.rviz"
-    )
-    rviz_node = Node(
-        package="rviz2",
-        executable="rviz2",
-        name="rviz2",
-        arguments=["-d", rviz_file],
-    )
-
-    if rviz_val:
-        launch_list.append(rviz_node)
-
-    return launch_list
-
+            parameters=[{"robot_description": robot_description}],
+        ),
+        Node(
+            package="controller_manager",
+            executable="ros2_control_node",
+            namespace=namespace_str,
+            parameters=[
+                franka_controllers,
+                {"robot_description": robot_description},
+                {"arm_id": arm_id_str},
+                {"load_gripper": load_gripper_str},
+                {"joint_limits": joint_limits_filepath},
+            ],
+            remappings=[("joint_states", "franka/joint_states")],
+            output={"stdout": "screen", "stderr": "screen"},
+            on_exit=Shutdown(),
+        ),
+    ]
 
 def generate_launch_description():
 
-    declared_arguments = []
+    namespace_parameter_name = "namespace"
+    robot_ip_parameter_name = "robot_ip"
+    arm_id_parameter_name = "arm_id"
+    load_gripper_parameter_name = "load_gripper"
+    use_fake_hardware_parameter_name = "use_fake_hardware"
+    fake_sensor_commands_parameter_name = "fake_sensor_commands"
+    use_rviz_parameter_name = "use_rviz"
 
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            name="left_robot_ip",
-            default_value="",
-            description="IP address of the left robot",
-        )
+    # Create LaunchConfigurations
+    namespace = LaunchConfiguration(namespace_parameter_name)
+    robot_ip = LaunchConfiguration(robot_ip_parameter_name)
+    arm_id = LaunchConfiguration(arm_id_parameter_name)
+    load_gripper = LaunchConfiguration(load_gripper_parameter_name)
+    use_fake_hardware = LaunchConfiguration(use_fake_hardware_parameter_name)
+    fake_sensor_commands = LaunchConfiguration(fake_sensor_commands_parameter_name)
+    use_rviz = LaunchConfiguration(use_rviz_parameter_name)
+
+    # RViz configuration
+    rviz_file = os.path.join(
+        get_package_share_directory("franka_description"), "rviz", "visualize_franka.rviz"
     )
 
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            name="right_robot_ip",
-            default_value="",
-            description="IP address of the right robot",
-        )
+    # Opaque function to handle dynamic URDF generation and node spawning
+    robot_description_dependent_nodes_spawner_opaque_function = OpaqueFunction(
+        function=_robot_description_dependent_nodes_spawner,
+        args=[
+            namespace,
+            robot_ip,
+            arm_id,
+            use_fake_hardware,
+            fake_sensor_commands,
+            load_gripper,
+        ],
     )
 
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            name="rviz", default_value="true", description="Launch rviz"
-        )
+    launch_description = LaunchDescription(
+        [
+            DeclareLaunchArgument(
+                namespace_parameter_name,
+                default_value="",
+                description="Namespace to isolate multiple robot instances.",
+            ),
+            DeclareLaunchArgument(
+                robot_ip_parameter_name,
+                description="Hostname or IP address of the robot.",
+            ),
+            DeclareLaunchArgument(
+                arm_id_parameter_name,
+                default_value="fr3",
+                description="ID of the type of arm used (e.g., fr3).",
+            ),
+            DeclareLaunchArgument(
+                use_rviz_parameter_name,
+                default_value="false",
+                description="Visualize the robot in RViz.",
+            ),
+            DeclareLaunchArgument(
+                use_fake_hardware_parameter_name,
+                default_value="false",
+                description="Use fake hardware.",
+            ),
+            DeclareLaunchArgument(
+                fake_sensor_commands_parameter_name,
+                default_value="false",
+                description="Fake sensor commands (only valid when use_fake_hardware is true).",
+            ),
+            DeclareLaunchArgument(
+                load_gripper_parameter_name,
+                default_value="true",
+                description="Use Franka Gripper as an end-effector. Otherwise, load robot without an end-effector.",
+            ),
+            Node(
+                package="joint_state_publisher",
+                executable="joint_state_publisher",
+                namespace=namespace,
+                name="joint_state_publisher",
+                parameters=[
+                    {
+                        "source_list": [
+                            "franka/joint_states",
+                            "franka_gripper/joint_states",
+                        ],
+                        "rate": 30,
+                    }
+                ],
+            ),
+            # Dynamically generate URDF and bring up ros2_control_node
+            robot_description_dependent_nodes_spawner_opaque_function,
+            # Spawn joint_state_broadcaster
+            Node(
+                package="controller_manager",
+                executable="spawner",
+                namespace=namespace,
+                arguments=["joint_state_broadcaster"],
+                output="screen",
+            ),
+            # Spawn franka_robot_state_broadcaster (only if not using fake hardware)
+            Node(
+                package="controller_manager",
+                executable="spawner",
+                namespace=namespace,
+                arguments=["franka_robot_state_broadcaster"],
+                parameters=[{"arm_id": arm_id}],
+                output="screen",
+                condition=UnlessCondition(use_fake_hardware),
+            ),
+            # Optionally include the Franka gripper launch file
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    [
+                        PathJoinSubstitution(
+                            [FindPackageShare("franka_gripper"), "launch", "gripper.launch.py"]
+                        )
+                    ]
+                ),
+                launch_arguments={
+                    robot_ip_parameter_name: robot_ip,
+                    use_fake_hardware_parameter_name: use_fake_hardware,
+                    namespace_parameter_name: namespace,
+                }.items(),
+                condition=IfCondition(load_gripper),
+            ),
+            # Optionally launch RViz
+            Node(
+                package="rviz2",
+                executable="rviz2",
+                name="rviz2",
+                arguments=["--display-config", rviz_file],
+                condition=IfCondition(use_rviz),
+            ),
+            # Finally, spawn your main joint impedance controller
+            Node(
+                package="controller_manager",
+                executable="spawner",
+                namespace=namespace,
+                arguments=["joint_impedance_controller"],
+                output="screen",
+            ),
+        ]
     )
 
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            name="ee_id", default_value="", description="Gripper type"
-        )
-    )
-
-    return LaunchDescription(
-        declared_arguments + [OpaqueFunction(function=launch_setup)]
-    )
+    return launch_description
