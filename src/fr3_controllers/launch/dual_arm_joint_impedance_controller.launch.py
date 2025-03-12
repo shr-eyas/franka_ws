@@ -24,8 +24,8 @@ def load_arm(robot_ip: str, ee_id_val: str, is_left: bool):
         return []
 
     # path to packages
-    bringup_pkg = os.path.join(get_package_share_directory("fr3_bringup"))
-    description_pkg = os.path.join(get_package_share_directory("fr3_description"))
+    # bringup_pkg = os.path.join(get_package_share_directory("fr3_bringup"))
+    description_pkg = os.path.join(get_package_share_directory("franka_description"))
     controllers_pkg = os.path.join(get_package_share_directory("fr3_controllers"))
     xacro_file = os.path.join(description_pkg, "robots", "fr3", "fr3.urdf.xacro")
 
@@ -129,7 +129,7 @@ def launch_setup(context, *args, **kwargs):
     )
 
     rviz_file = os.path.join(
-        get_package_share_directory("fr3_description"), "rviz", "bringup.rviz"
+        get_package_share_directory("franka_description"), "rviz", "bringup.rviz"
     )
     rviz_node = Node(
         package="rviz2",
