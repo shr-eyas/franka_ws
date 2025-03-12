@@ -17,7 +17,83 @@ controller_manager:
     joint_position_controller:
       type: fr3_controllers/JointPositionController
 
+fr3_right/controller_manager:
+  ros__parameters:
+    update_rate: 1000  # Hz
+
+    joint_trajectory_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    
+    franka_robot_state_broadcaster:
+      type: franka_robot_state_broadcaster/FrankaRobotStateBroadcaster
+
+    joint_impedance_controller:
+      type: fr3_controllers/JointImpedanceController
+
+    joint_position_controller:
+      type: fr3_controllers/JointPositionController
+
+fr3_left/controller_manager:
+  ros__parameters:
+    update_rate: 1000  # Hz
+
+    joint_trajectory_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    
+    franka_robot_state_broadcaster:
+      type: franka_robot_state_broadcaster/FrankaRobotStateBroadcaster
+
+    joint_impedance_controller:
+      type: fr3_controllers/JointImpedanceController
+
+    joint_position_controller:
+      type: fr3_controllers/JointPositionController
+
 joint_impedance_controller:
+  ros__parameters:
+    k_gains:
+      - 24.0
+      - 24.0
+      - 24.0
+      - 24.0
+      - 10.0
+      - 6.0
+      - 2.0
+    d_gains:
+      - 2.0
+      - 2.0
+      - 2.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 0.5
+
+fr3_left/joint_impedance_controller:
+  ros__parameters:
+    k_gains:
+      - 24.0
+      - 24.0
+      - 24.0
+      - 24.0
+      - 10.0
+      - 6.0
+      - 2.0
+    d_gains:
+      - 2.0
+      - 2.0
+      - 2.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 0.5
+
+fr3_right/joint_impedance_controller:
   ros__parameters:
     k_gains:
       - 24.0
