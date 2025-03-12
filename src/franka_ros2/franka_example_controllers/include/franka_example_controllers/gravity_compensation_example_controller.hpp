@@ -17,7 +17,6 @@
 #include <string>
 
 #include <controller_interface/controller_interface.hpp>
-#include "franka_example_controllers/visibility_control.h"
 
 #include <rclcpp/duration.hpp>
 #include <rclcpp/time.hpp>

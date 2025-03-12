@@ -150,7 +150,6 @@ void JointImpedanceController::commandCallback(
   got_new_command_ = true;
 }
 
-
 void JointImpedanceController::updateJointStates() {
   for (auto i = 0; i < num_joints; ++i) {
     const auto& position_interface = state_interfaces_.at(2 * i);
