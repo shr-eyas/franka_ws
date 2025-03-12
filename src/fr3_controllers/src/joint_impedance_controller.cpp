@@ -130,7 +130,7 @@ CallbackReturn JointImpedanceController::on_activate(
   
   // Create subscription for external commands now that the controller is active.
   command_sub_ = get_node()->create_subscription<sensor_msgs::msg::JointState>(
-    "/joint_state/command",
+    "/" + arm_id_ + "/joint_state/command",
     rclcpp::SystemDefaultsQoS(),
     std::bind(&JointImpedanceController::commandCallback, this, std::placeholders::_1)
   );
