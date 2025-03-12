@@ -1,0 +1,48 @@
+/fr3_right/controller_manager:
+  ros__parameters:
+    update_rate: 1000  # Hz
+
+    joint_impedance_controller:
+      type: "fr3_controllers/JointImpedanceController"
+
+    joint_state_broadcaster:
+      type: "joint_state_broadcaster/JointStateBroadcaster"
+
+    gripper_controller:
+      type: "fr3_controllers/GripperController"
+  
+/fr3_right/joint_impedance_controller:
+  ros__parameters:
+    arm_id: "fr3_right"
+    k_gains:
+      - 24.0
+      - 24.0
+      - 24.0
+      - 24.0
+      - 10.0
+      - 6.0
+      - 2.0
+    d_gains:
+      - 2.0
+      - 2.0
+      - 2.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 0.5
+
+/fr3_right/joint_state_broadcaster:
+  ros__parameters:
+    joints:
+      - fr3_right_joint1
+      - fr3_right_joint2
+      - fr3_right_joint3
+      - fr3_right_joint4
+      - fr3_right_joint5
+      - fr3_right_joint6
+      - fr3_right_joint7
+
+/fr3_right/gripper_controller:
+  ros__parameters:
+    arm_id: "fr3_right"
+    robot_ip: "192.168.1.12"
