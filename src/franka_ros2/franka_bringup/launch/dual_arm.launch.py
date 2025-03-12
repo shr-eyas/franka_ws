@@ -69,6 +69,7 @@ def robot_description_dependent_nodes_spawner(context, robot_ip, arm_id,
         parameters=[dual_arm_controllers,
                     {'robot_description': robot_description},
                     {'arm_id': arm_id}],
+        # arm_id/joint_states
         remappings=[('joint_states', 'franka/joint_states')],
         output={'stdout': 'screen', 'stderr': 'screen'},
         on_exit=Shutdown(),

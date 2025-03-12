@@ -1,3 +1,4 @@
+# This is just the node, correct this
 fr3_left__controller_manager:
   ros__parameters:
     update_rate: 1000  # Hz
