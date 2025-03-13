@@ -32,6 +32,7 @@ add_library(
         SHARED
         src/joint_impedance_controller.cpp
         src/joint_position_controller.cpp
+        src/joint_torque_controller.cpp
 )
 
 target_include_directories(

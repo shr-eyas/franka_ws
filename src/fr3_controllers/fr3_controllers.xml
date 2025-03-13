@@ -21,4 +21,11 @@
         </description>
     </class>
 
+    <class name="fr3_controllers/JointTorqueController"
+           type="fr3_controllers::JointTorqueController" base_class_type="controller_interface::ControllerInterface">
+        <description>
+            Calls the action service to move the grippper.
+        </description>
+    </class>
+
 </library>
