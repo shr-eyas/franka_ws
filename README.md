@@ -29,16 +29,6 @@ ros2 launch fr3_controllers joint_torque_controller.launch.py robot_ip:=192.168.
 ros2 launch fr3_controllers joint_torque_controller.launch.py robot_ip:=192.168.1.12 namespace:=fr3_right
 ```
 
-#### With Fake Hardware
-If using fake hardware and RViz visualization (in separate terminals):
-
-```bash
-ros2 launch fr3_controllers joint_torque_controller.launch.py robot_ip:='dont_care' use_rviz:=true namespace:=fr3_left use_fake_hardware:=true
-```
-```bash
-ros2 launch fr3_controllers joint_impedance_controller.launch.py robot_ip:='dont_care' use_rviz:=true namespace:=fr3_right use_fake_hardware:=true
-```
-
 ### Impedance Control
 To enable impedance control for both arms (in separate terminals):
 
@@ -47,6 +37,27 @@ ros2 launch fr3_controllers joint_impedance_controller.launch.py robot_ip:=192.1
 ```
 ```bash
 ros2 launch fr3_controllers joint_impedance_controller.launch.py robot_ip:=192.168.1.11 namespace:=fr3_left
+```
+
+### Velocity Control
+To enable impedance control for both arms (in separate terminals):
+
+```bash
+ros2 launch fr3_controllers joint_velocity_controller.launch.py robot_ip:=192.168.1.12 namespace:=fr3_right
+```
+```bash
+ros2 launch fr3_controllers joint_velocity_controller.launch.py robot_ip:=192.168.1.11 namespace:=fr3_left
+
+```
+
+#### With Fake Hardware
+If using fake hardware and RViz visualization (in separate terminals):
+
+```bash
+ros2 launch fr3_controllers joint_torque_controller.launch.py robot_ip:='dont_care' use_rviz:=true namespace:=fr3_left use_fake_hardware:=true
+```
+```bash
+ros2 launch fr3_controllers joint_impedance_controller.launch.py robot_ip:='dont_care' use_rviz:=true namespace:=fr3_right use_fake_hardware:=true
 ```
 
 ## Single Arm Control
