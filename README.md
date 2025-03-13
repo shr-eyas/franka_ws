@@ -6,12 +6,10 @@ This repository provides ROS 2 packages for controlling single and dual Franka E
 ## Installation
 Ensure you have ROS 2 installed and sourced. Libfranka version, Robot version, Robot Description version, 
 
-> [!IMPORTANT]
-> Libfranka version = 0.14.1 
-
-> Check compatibility with robot server version 
-
-> Robot Description version = 0.3.0
+> [!IMPORTANT]  
+> Libfranka version = 0.14.1  
+> Check compatibility with robot server version  
+> Robot Description version = 0.3.0  
 
 ```bash
 git clone https://github.com/shr-eyas/franka_ws.git
