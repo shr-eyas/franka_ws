@@ -1,12 +1,5 @@
 <library path="fr3_controllers">
 
-    <class name="fr3_controllers/JointImpedanceController"
-           type="fr3_controllers::JointImpedanceController" base_class_type="controller_interface::ControllerInterface">
-        <description>
-            Joint impedance controller.
-        </description>
-    </class>
-
     <class name="fr3_controllers/JointPositionController"
            type="fr3_controllers::JointPositionController" base_class_type="controller_interface::ControllerInterface">
         <description>
@@ -14,15 +7,29 @@
         </description>
     </class>
 
-    <class name="fr3_controllers/GripperController"
-           type="fr3_controllers::GripperController" base_class_type="controller_interface::ControllerInterface">
+    <class name="fr3_controllers/JointVelocityController"
+           type="fr3_controllers::JointVelocityController" base_class_type="controller_interface::ControllerInterface">
         <description>
-            Calls the action service to move the grippper.
+            Joint velocity controller
         </description>
     </class>
 
     <class name="fr3_controllers/JointTorqueController"
            type="fr3_controllers::JointTorqueController" base_class_type="controller_interface::ControllerInterface">
+        <description>
+            Joint torque controller
+        </description>
+    </class>
+
+    <class name="fr3_controllers/JointImpedanceController"
+           type="fr3_controllers::JointImpedanceController" base_class_type="controller_interface::ControllerInterface">
+        <description>
+            Joint impedance controller.
+        </description>
+    </class>
+
+    <class name="fr3_controllers/GripperController"
+           type="fr3_controllers::GripperController" base_class_type="controller_interface::ControllerInterface">
         <description>
             Calls the action service to move the grippper.
         </description>

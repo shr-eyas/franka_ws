@@ -134,7 +134,6 @@ CallbackReturn JointImpedanceController::on_activate(
     rclcpp::SystemDefaultsQoS(),
     std::bind(&JointImpedanceController::commandCallback, this, std::placeholders::_1)
   );
-
   return CallbackReturn::SUCCESS;
 }
 

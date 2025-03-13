@@ -17,6 +17,9 @@ controller_manager:
     joint_position_controller:
       type: fr3_controllers/JointPositionController
 
+    joint_velocity_controller:
+      type: fr3_controllers/JointVelocityController
+
     joint_torque_controller:
       type: fr3_controllers/JointTorqueController
 
@@ -38,6 +41,9 @@ fr3_right/controller_manager:
 
     joint_position_controller:
       type: fr3_controllers/JointPositionController
+    
+    joint_velocity_controller:
+      type: fr3_controllers/JointVelocityController
 
     joint_torque_controller:
       type: fr3_controllers/JointTorqueController
@@ -60,6 +66,9 @@ fr3_left/controller_manager:
 
     joint_position_controller:
       type: fr3_controllers/JointPositionController
+    
+    joint_velocity_controller:
+      type: fr3_controllers/JointVelocityController
 
     joint_torque_controller:
       type: fr3_controllers/JointTorqueController
