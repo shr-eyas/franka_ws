@@ -50,7 +50,7 @@ ros2 launch fr3_controllers joint_impedance_controller.launch.py robot_ip:=192.1
 ```
 
 ## Single Arm Control
-### Move to Start Example
+### Move to Start
 To initialize a single Franka arm:
 
 ```bash
