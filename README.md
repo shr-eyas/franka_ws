@@ -8,7 +8,9 @@ Ensure you have ROS 2 installed and sourced. Libfranka version, Robot version, R
 
 > [!IMPORTANT]
 > Libfranka version = 0.14.1 
+
 > Check compatibility with robot server version 
+
 > Robot Description version = 0.3.0
 
 ```bash
