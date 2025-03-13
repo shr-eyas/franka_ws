@@ -2,6 +2,7 @@
 
 #include <exception>
 #include <string>
+#include <Eigen/Eigen>
 
 namespace fr3_controllers {
 
@@ -24,8 +25,11 @@ JointTorqueController::state_interface_configuration() const {
 controller_interface::return_type JointTorqueController::update(
     const rclcpp::Time& /*time*/,
     const rclcpp::Duration& /*period*/) {
-  for (auto& command_interface : command_interfaces_) {
-    command_interface.set_value(0);
+
+  torque_external << 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+
+  for (int i = 0; i < num_joints; ++i) {
+    command_interfaces_[i].set_value(torque_external(i));
   }
   return controller_interface::return_type::OK;
 }

@@ -17,6 +17,9 @@ controller_manager:
     joint_position_controller:
       type: fr3_controllers/JointPositionController
 
+    joint_torque_controller:
+      type: fr3_controllers/JointTorqueController
+
 fr3_right/controller_manager:
   ros__parameters:
     update_rate: 1000  # Hz

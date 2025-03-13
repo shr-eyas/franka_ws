@@ -3,6 +3,7 @@
 #include <string>
 
 #include <controller_interface/controller_interface.hpp>
+#include <Eigen/Eigen>
 
 #include <rclcpp/duration.hpp>
 #include <rclcpp/time.hpp>
@@ -13,6 +14,7 @@ namespace fr3_controllers {
 
 class JointTorqueController : public controller_interface::ControllerInterface {
  public:
+  using Vector7d = Eigen::Matrix<double, 7, 1>;
   CallbackReturn on_configure(const rclcpp_lifecycle::State& previous_state) override;
 
   CallbackReturn on_init() override;
@@ -29,5 +31,6 @@ class JointTorqueController : public controller_interface::ControllerInterface {
  private:
   std::string arm_id_;
   const int num_joints = 7;
+  Vector7d torque_external; 
 };
 }  // namespace fr3_controllers
