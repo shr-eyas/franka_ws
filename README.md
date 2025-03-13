@@ -1,4 +1,4 @@
-# Franka_WS
+# Franka using ROS2
 
 ## Overview
 This repository provides ROS 2 packages for controlling single and dual Franka Emika Panda arms using joint position, velocity, torque and impedance controllers. You can use the launch files for real hardware as well as for a simulated environment with fake hardware.
