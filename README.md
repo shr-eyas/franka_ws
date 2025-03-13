@@ -20,26 +20,32 @@ source install/setup.bash
 
 ## Dual Arm Control
 ### Torque Control
-To run torque control for dual-arm setup:
+To run torque control for dual-arm setup (in separate terminals):
 
 ```bash
 ros2 launch fr3_controllers joint_torque_controller.launch.py robot_ip:=192.168.1.11 namespace:=fr3_left
+```
+```bash
 ros2 launch fr3_controllers joint_torque_controller.launch.py robot_ip:=192.168.1.12 namespace:=fr3_right
 ```
 
 #### With Fake Hardware
-If using fake hardware and RViz visualization:
+If using fake hardware and RViz visualization (in separate terminals):
 
 ```bash
 ros2 launch fr3_controllers joint_torque_controller.launch.py robot_ip:='dont_care' use_rviz:=true namespace:=fr3_left use_fake_hardware:=true
+```
+```bash
 ros2 launch fr3_controllers joint_impedance_controller.launch.py robot_ip:='dont_care' use_rviz:=true namespace:=fr3_right use_fake_hardware:=true
 ```
 
 ### Impedance Control
-To enable impedance control for both arms:
+To enable impedance control for both arms (in separate terminals):
 
 ```bash
 ros2 launch fr3_controllers joint_impedance_controller.launch.py robot_ip:=192.168.1.12 namespace:=fr3_right
+```
+```bash
 ros2 launch fr3_controllers joint_impedance_controller.launch.py robot_ip:=192.168.1.11 namespace:=fr3_left
 ```
 
