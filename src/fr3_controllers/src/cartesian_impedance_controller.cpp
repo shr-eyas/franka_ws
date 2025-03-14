@@ -117,20 +117,23 @@ CallbackReturn CartesianImpedanceController::on_activate(const rclcpp_lifecycle:
   Eigen::Affine3d current_transform(pose_matrix);
   position_d_ = current_transform.translation();
   orientation_d_ = Eigen::Quaterniond(current_transform.rotation());
-  
+  RCLCPP_INFO(get_node()->get_logger(), "Hola!");
+
   RCLCPP_INFO(get_node()->get_logger(), "Initial Cartesian pose: position (%f, %f, %f)",
               position_d_.x(), position_d_.y(), position_d_.z());
-
   // Create subscription for external equilibrium pose commands.
   eq_pose_sub_ = get_node()->create_subscription<geometry_msgs::msg::PoseStamped>(
       "equilibrium_pose", rclcpp::SystemDefaultsQoS(),
       std::bind(&CartesianImpedanceController::equilibriumPoseCallback, this, std::placeholders::_1));
 
+  
   return CallbackReturn::SUCCESS;
 }
 
 /*  Update */
 controller_interface::return_type CartesianImpedanceController::update(const rclcpp::Time& /*time*/, const rclcpp::Duration& period) {
+  
+  
   // 1. Update joint states.
   updateJointStates();
   RCLCPP_DEBUG(get_node()->get_logger(), "Joint positions: [%f, %f, ...]", q_(0), q_(1));

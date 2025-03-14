@@ -27,6 +27,8 @@ class CartesianImpedanceController : public controller_interface::ControllerInte
     CallbackReturn on_deactivate(const rclcpp_lifecycle::State& previous_state) override;
 
  private:
+    bool got_new_pose_{false};
+
     // Constant: number of joints (for a 7-DOF robot).
     const int num_joints = 7;
 
