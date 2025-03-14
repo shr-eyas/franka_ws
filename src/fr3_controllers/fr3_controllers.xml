@@ -35,4 +35,11 @@
         </description>
     </class>
 
+     <class name="fr3_controllers/CartesianImpedanceController"
+           type="fr3_controllers::CartesianImpedanceController" base_class_type="controller_interface::ControllerInterface">
+        <description>
+            Joint impedance controller.
+        </description>
+    </class>
+
 </library>

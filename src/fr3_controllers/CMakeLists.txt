@@ -34,6 +34,7 @@ add_library(
         src/joint_position_controller.cpp
         src/joint_torque_controller.cpp
         src/joint_velocity_controller.cpp
+        src/cartesian_impedance_controller.cpp
 )
 
 target_include_directories(

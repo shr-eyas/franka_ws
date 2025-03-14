@@ -23,6 +23,9 @@ controller_manager:
     joint_torque_controller:
       type: fr3_controllers/JointTorqueController
 
+    cartesian_impedance_controller:
+      type: fr3_controllers/CartesianImpedanceController
+
 fr3_right/controller_manager:
   ros__parameters:
     update_rate: 1000  # Hz
@@ -48,6 +51,9 @@ fr3_right/controller_manager:
     joint_torque_controller:
       type: fr3_controllers/JointTorqueController
 
+    cartesian_impedance_controller:
+      type: fr3_controllers/CartesianImpedanceController
+
 fr3_left/controller_manager:
   ros__parameters:
     update_rate: 1000  # Hz
@@ -72,6 +78,9 @@ fr3_left/controller_manager:
 
     joint_torque_controller:
       type: fr3_controllers/JointTorqueController
+
+    cartesian_impedance_controller:
+      type: fr3_controllers/CartesianImpedanceController
 
 joint_impedance_controller:
   ros__parameters:
