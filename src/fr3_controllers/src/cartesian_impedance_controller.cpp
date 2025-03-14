@@ -9,6 +9,9 @@
 
 #include <Eigen/Eigen>
 
+#include "hardware_interface/types/hardware_interface_return_values.hpp"
+#include "hardware_interface/types/hardware_interface_type_values.hpp"
+
 namespace fr3_controllers {
 
 /* Command Interface */
@@ -87,8 +90,9 @@ CallbackReturn CartesianImpedanceController::on_configure(const rclcpp_lifecycle
 
   // Create the Franka robot model.
   franka_robot_model_ = std::make_unique<franka_semantic_components::FrankaRobotModel>(
+    franka_semantic_components::FrankaRobotModel(
       arm_id_ + "/" + k_robot_model_interface_name,
-      arm_id_ + "/" + k_robot_state_interface_name);
+      arm_id_ + "/" + k_robot_state_interface_name));
 
   RCLCPP_INFO(get_node()->get_logger(), "Controller on_configure complete. arm_id: %s", arm_id_.c_str());
   return CallbackReturn::SUCCESS;
@@ -117,7 +121,6 @@ CallbackReturn CartesianImpedanceController::on_activate(const rclcpp_lifecycle:
   Eigen::Affine3d current_transform(pose_matrix);
   position_d_ = current_transform.translation();
   orientation_d_ = Eigen::Quaterniond(current_transform.rotation());
-  RCLCPP_INFO(get_node()->get_logger(), "Hola!");
 
   RCLCPP_INFO(get_node()->get_logger(), "Initial Cartesian pose: position (%f, %f, %f)",
               position_d_.x(), position_d_.y(), position_d_.z());
@@ -126,14 +129,14 @@ CallbackReturn CartesianImpedanceController::on_activate(const rclcpp_lifecycle:
       "equilibrium_pose", rclcpp::SystemDefaultsQoS(),
       std::bind(&CartesianImpedanceController::equilibriumPoseCallback, this, std::placeholders::_1));
 
-  
+  RCLCPP_INFO(get_node()->get_logger(), "Hola!");
   return CallbackReturn::SUCCESS;
 }
 
 /*  Update */
 controller_interface::return_type CartesianImpedanceController::update(const rclcpp::Time& /*time*/, const rclcpp::Duration& period) {
   
-  
+  RCLCPP_INFO(get_node()->get_logger(), "Hola again!");
   // 1. Update joint states.
   updateJointStates();
   RCLCPP_DEBUG(get_node()->get_logger(), "Joint positions: [%f, %f, ...]", q_(0), q_(1));

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
 #include <Eigen/Eigen>
 #include <controller_interface/controller_interface.hpp>
