@@ -26,7 +26,6 @@ class CartesianImpedanceController : public controller_interface::ControllerInte
     CallbackReturn on_activate(const rclcpp_lifecycle::State& previous_state) override;
     CallbackReturn on_deactivate(const rclcpp_lifecycle::State& previous_state) override;
 
-
  private:
     // Constant: number of joints (for a 7-DOF robot).
     const int num_joints = 7;
