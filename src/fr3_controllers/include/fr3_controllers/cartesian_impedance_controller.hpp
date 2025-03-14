@@ -6,6 +6,7 @@
 #include <controller_interface/controller_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include "franka_semantic_components/franka_robot_model.hpp"
 
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
@@ -23,6 +24,8 @@ class CartesianImpedanceController : public controller_interface::ControllerInte
     CallbackReturn on_init() override;
     CallbackReturn on_configure(const rclcpp_lifecycle::State& previous_state) override;
     CallbackReturn on_activate(const rclcpp_lifecycle::State& previous_state) override;
+    CallbackReturn on_deactivate(const rclcpp_lifecycle::State& previous_state) override;
+
 
  private:
     // Constant: number of joints (for a 7-DOF robot).

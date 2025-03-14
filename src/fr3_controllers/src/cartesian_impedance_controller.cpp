@@ -1,6 +1,6 @@
 #include <fr3_controllers/cartesian_impedance_controller.hpp>
 #include <fr3_controllers/robot_utils.hpp>
-#include <fr3_controllers/pseudo_inversion.h>
+#include <fr3_controllers/pseudo_inversion.hpp>
 
 #include <cassert>
 #include <cmath>
@@ -202,7 +202,7 @@ CartesianImpedanceController::saturateTorqueRate(
     Vector7d tau_d_saturated;
     for (int i = 0; i < 7; ++i) {
         double diff = tau_d_calculated(i) - tau_previous(i);
-        tau_d_saturated(i) = tau_previous(i) + std::max(std::min(diff, delta_tau_max), -delta_tau_max);
+        tau_d_saturated(i) = tau_previous(i) + std::max(std::min(diff, delta_tau_max_), -delta_tau_max_);
     }
     return tau_d_saturated;
 }
