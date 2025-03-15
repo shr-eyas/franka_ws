@@ -13,7 +13,7 @@ Ensure you have ROS 2 installed and sourced.
 
 ```bash
 git clone https://github.com/shr-eyas/franka_ws.git
-cd ~/frank_ws
+cd ~/franka_ws
 colcon build 
 source install/setup.bash
 ```
