@@ -6,7 +6,10 @@
 #include <Eigen/Eigen>
 #include <controller_interface/controller_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <franka_msgs/msg/franka_robot_state.hpp>
+
 #include "franka_semantic_components/franka_robot_model.hpp"
+#include "franka_semantic_components/franka_robot_state.hpp"
 
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
@@ -37,7 +40,11 @@ private:
   double elapsed_time_{0.0};
   void updateJointStates();
 
+  Eigen::Vector3d position_d_;
+  Eigen::Quaterniond orientation_d_;
+
   std::unique_ptr<franka_semantic_components::FrankaRobotModel> franka_robot_model_;
+
   const std::string k_robot_state_interface_name{"robot_state"};
   const std::string k_robot_model_interface_name{"robot_model"};
   

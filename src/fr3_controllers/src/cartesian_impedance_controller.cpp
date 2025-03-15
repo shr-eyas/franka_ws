@@ -79,6 +79,13 @@ CallbackReturn CartesianImpedanceController::on_configure(const rclcpp_lifecycle
 CallbackReturn CartesianImpedanceController::on_activate(const rclcpp_lifecycle::State& /*previous_state*/) {
   franka_robot_model_->assign_loaned_state_interfaces(state_interfaces_);
   updateJointStates();
+
+  std::array<double, 16> pose_array_init = franka_robot_model_->getPoseMatrix(franka::Frame::kEndEffector);
+  Eigen::Matrix4d pose_matrix_init = Eigen::Map<Eigen::Matrix4d>(pose_array_init.data());
+  Eigen::Affine3d init_transform(pose_matrix_init);
+  position_d_ = init_transform.translation();
+  orientation_d_ = Eigen::Quaterniond(init_transform.rotation());
+
   dq_filtered_.setZero();
   initial_q_ = q_;
   elapsed_time_ = 0.0;
@@ -88,8 +95,12 @@ CallbackReturn CartesianImpedanceController::on_activate(const rclcpp_lifecycle:
 
 controller_interface::return_type CartesianImpedanceController::update(const rclcpp::Time& /*time*/, const rclcpp::Duration& period) {
 
-  std::array<double, 16> pose = franka_robot_model_->getPoseMatrix(franka::Frame::kJoint4);
-  std::array<double, 42> joint4_body_jacobian_wrt_joint4 = franka_robot_model_->getBodyJacobian(franka::Frame::kJoint4);
+  std::array<double, 16> pose_array = franka_robot_model_->getPoseMatrix(franka::Frame::kEndEffector);
+  Eigen::Matrix4d pose_matrix = Eigen::Map<Eigen::Matrix4d>(pose_array.data());
+  Eigen::Affine3d current_transform(pose_matrix);
+  Eigen::Vector3d current_position = current_transform.translation();
+  Eigen::Quaterniond current_orientation(current_transform.rotation());
+
   std::array<double, 42> endeffector_jacobian_wrt_base = franka_robot_model_->getZeroJacobian(franka::Frame::kEndEffector);
   
   std::array<double, 7> coriolis_array = franka_robot_model_->getCoriolisForceVector();

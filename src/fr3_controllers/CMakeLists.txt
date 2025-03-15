@@ -26,6 +26,9 @@ find_package(moveit_core REQUIRED)
 find_package(moveit_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
 find_package(geometric_shapes REQUIRED)
+find_package(urdf REQUIRED)
+find_package(orocos_kdl REQUIRED)
+find_package(kdl_parser REQUIRED)
 
 add_library(
         ${PROJECT_NAME}
@@ -57,6 +60,9 @@ ament_target_dependencies(
         moveit_msgs
         trajectory_msgs
         geometric_shapes
+        urdf
+        orocos_kdl
+        kdl_parser
 )
 
 pluginlib_export_plugin_description_file(

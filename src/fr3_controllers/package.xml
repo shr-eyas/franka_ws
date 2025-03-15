@@ -16,6 +16,10 @@
   <depend>franka_msgs</depend>
   <depend>franka_semantic_components</depend>
   <depend>sensor_msgs</depend>
+  <depend>urdf</depend>
+  <depend>orocos_kdl</depend>
+  <depend>kdl_parser</depend>
+  <depend>Eigen3</depend>
 
   <export>
     <build_type>ament_cmake</build_type>
