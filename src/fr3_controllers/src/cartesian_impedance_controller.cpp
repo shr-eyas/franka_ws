@@ -101,10 +101,17 @@ controller_interface::return_type CartesianImpedanceController::update(const rcl
   Eigen::Vector3d current_position = current_transform.translation();
   Eigen::Quaterniond current_orientation(current_transform.rotation());
 
+  Eigen::Matrix<double, 6, 1> error;
+  error.head(3) = current_position - position_d_;
+  if (current_orientation.coeffs().dot(orientation_d_.coeffs()) < 0.0) {
+    current_orientation.coeffs() = -current_orientation.coeffs();
+  }
+  Eigen::Quaterniond error_quaternion = current_orientation.inverse() * orientation_d_;
+  error.tail(3) << error_quaternion.x(), error_quaternion.y(), error_quaternion.z();
+  // Rotate orientation error into the base frame.
+  error.tail(3) = -current_transform.rotation() * error.tail(3);
+
   std::array<double, 42> endeffector_jacobian_wrt_base = franka_robot_model_->getZeroJacobian(franka::Frame::kEndEffector);
-  
-  std::array<double, 7> coriolis_array = franka_robot_model_->getCoriolisForceVector();
-  Vector7d coriolis = Eigen::Map<Vector7d>(coriolis_array.data());
 
   updateJointStates();
 
@@ -118,7 +125,7 @@ controller_interface::return_type CartesianImpedanceController::update(const rcl
 
   const double kAlpha = 0.99;
   dq_filtered_ = (1 - kAlpha) * dq_filtered_ + kAlpha * dq_;
-  Vector7d tau_d_calculated = k_gains_.cwiseProduct(q_goal - q_) + d_gains_.cwiseProduct(-dq_filtered_) + coriolis;
+  Vector7d tau_d_calculated = k_gains_.cwiseProduct(q_goal - q_) + d_gains_.cwiseProduct(-dq_filtered_);
 
   for (int i = 0; i < num_joints; ++i) {
     command_interfaces_[i].set_value(tau_d_calculated(i));

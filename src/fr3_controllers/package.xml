@@ -21,6 +21,12 @@
   <depend>kdl_parser</depend>
   <depend>Eigen3</depend>
 
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>urdf_parser_py</depend>
+  <depend>kdl_parser_py</depend>
+  <depend>python3-orocos-kdl</depend>
+
   <export>
     <build_type>ament_cmake</build_type>
   </export>
