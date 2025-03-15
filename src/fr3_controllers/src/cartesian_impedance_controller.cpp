@@ -95,14 +95,32 @@ CallbackReturn CartesianImpedanceController::on_activate(const rclcpp_lifecycle:
 
 controller_interface::return_type CartesianImpedanceController::update(const rclcpp::Time& /*time*/, const rclcpp::Duration& period) {
 
+  // 1. Update joint states.
+  updateJointStates();
+  RCLCPP_DEBUG(get_node()->get_logger(), "Joint positions: [%f, %f, ...]", q_(0), q_(1));
+  RCLCPP_DEBUG(get_node()->get_logger(), "Joint velocities: [%f, %f, ...]", dq_(0), dq_(1));
+
+  // 2. Get current end-effector pose.
   std::array<double, 16> pose_array = franka_robot_model_->getPoseMatrix(franka::Frame::kEndEffector);
   Eigen::Matrix4d pose_matrix = Eigen::Map<Eigen::Matrix4d>(pose_array.data());
   Eigen::Affine3d current_transform(pose_matrix);
   Eigen::Vector3d current_position = current_transform.translation();
   Eigen::Quaterniond current_orientation(current_transform.rotation());
+  RCLCPP_DEBUG(get_node()->get_logger(), "Current position: (%f, %f, %f)", current_position.x(), current_position.y(), current_position.z());
 
+  // 3. Retrieve Jacobian and Coriolis force.
+  std::array<double, 42> jacobian_array = franka_robot_model_->getZeroJacobian(franka::Frame::kEndEffector);
+  Eigen::Matrix<double, 6, 7> jacobian = Eigen::Map<Eigen::Matrix<double, 6, 7>>(jacobian_array.data());
+  RCLCPP_DEBUG(get_node()->get_logger(), "Jacobian (first row): (%f, %f, ...)", jacobian(0,0), jacobian(0,1));
+  
+  std::array<double, 7> coriolis_array = franka_robot_model_->getCoriolisForceVector();
+  Vector7d coriolis = Eigen::Map<Vector7d>(coriolis_array.data());
+  RCLCPP_DEBUG(get_node()->get_logger(), "Coriolis: [%f, %f, ...]", coriolis(0), coriolis(1));
+
+  // 4. Compute Cartesian error.
   Eigen::Matrix<double, 6, 1> error;
   error.head(3) = current_position - position_d_;
+  // Ensure consistent quaternion sign.
   if (current_orientation.coeffs().dot(orientation_d_.coeffs()) < 0.0) {
     current_orientation.coeffs() = -current_orientation.coeffs();
   }
@@ -110,25 +128,44 @@ controller_interface::return_type CartesianImpedanceController::update(const rcl
   error.tail(3) << error_quaternion.x(), error_quaternion.y(), error_quaternion.z();
   // Rotate orientation error into the base frame.
   error.tail(3) = -current_transform.rotation() * error.tail(3);
+  RCLCPP_DEBUG(get_node()->get_logger(), "Cartesian error norm: %f", error.norm());
 
-  std::array<double, 42> endeffector_jacobian_wrt_base = franka_robot_model_->getZeroJacobian(franka::Frame::kEndEffector);
+  // 5. Compute pseudo-inverse for nullspace handling.
+  Eigen::MatrixXd jacobian_transpose_pinv;
+  pseudoInverse(jacobian.transpose(), jacobian_transpose_pinv);
+  RCLCPP_DEBUG(get_node()->get_logger(), "Pseudo-inverse norm: %f", jacobian_transpose_pinv.norm());
 
-  updateJointStates();
+  // TEST
+  Matrix6d cartesian_stiffness_;
 
-  RCLCPP_DEBUG(get_node()->get_logger(), "Joint positions: [%f, %f, ...]", q_(0), q_(1));
-  RCLCPP_DEBUG(get_node()->get_logger(), "Joint velocities: [%f, %f, ...]", dq_(0), dq_(1));
+  // Define the stiffness values for each DOF (both translational and rotational).
+  double translational_stiffness_x_{0.0};
+  double translational_stiffness_y_{300.0};
+  double translational_stiffness_z_{300.0};
+  double rotational_stiffness_roll_{50.0};
+  double rotational_stiffness_pitch_{50.0};
+  double rotational_stiffness_yaw_{50.0};
 
-  Vector7d q_goal;
-  q_goal = initial_q_;
+  // Initialize the stiffness matrix with zeros
+  cartesian_stiffness_.setZero();
 
-  elapsed_time_ = elapsed_time_ + period.seconds();
+  // Set individual translational stiffness values along the diagonal
+  cartesian_stiffness_(0, 0) = translational_stiffness_x_;  // X-axis stiffness
+  cartesian_stiffness_(1, 1) = translational_stiffness_y_;  // Y-axis stiffness
+  cartesian_stiffness_(2, 2) = translational_stiffness_z_;  // Z-axis stiffness
 
-  const double kAlpha = 0.99;
-  dq_filtered_ = (1 - kAlpha) * dq_filtered_ + kAlpha * dq_;
-  Vector7d tau_d_calculated = k_gains_.cwiseProduct(q_goal - q_) + d_gains_.cwiseProduct(-dq_filtered_);
+  // Set individual rotational stiffness values along the diagonal
+  cartesian_stiffness_(3, 3) = rotational_stiffness_roll_;  // Roll stiffness
+  cartesian_stiffness_(4, 4) = rotational_stiffness_pitch_; // Pitch stiffness
+  cartesian_stiffness_(5, 5) = rotational_stiffness_yaw_;   // Yaw stiffness
 
+  // 6. Compute task-space torque.
+  Vector7d tau_task = jacobian.transpose() * (-cartesian_stiffness_ * error);
+  RCLCPP_DEBUG(get_node()->get_logger(), "tau_task norm: %f", tau_task.norm());
+
+  // Apply the computed task-space torque to the joints
   for (int i = 0; i < num_joints; ++i) {
-    command_interfaces_[i].set_value(tau_d_calculated(i));
+      command_interfaces_[i].set_value(tau_task(i));
   }
 
   return controller_interface::return_type::OK;
